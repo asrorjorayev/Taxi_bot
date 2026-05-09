@@ -73,6 +73,10 @@ class Announcement(models.Model):
         CANCELLED = "cancelled", "Cancelled"
         EXPIRED = "expired", "Expired"
 
+    class Gender(models.TextChoices):
+        MALE = "male", "Erkak"
+        FEMALE = "female", "Ayol"
+
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, related_name="announcements")
     announcement_type = models.CharField(max_length=20, choices=Type.choices)
     route = models.ForeignKey(Route, on_delete=models.PROTECT, related_name="announcements")
@@ -82,7 +86,8 @@ class Announcement(models.Model):
     car_number = models.CharField(max_length=50, null=True, blank=True)
     car_photo_file_id = models.CharField(max_length=255, null=True, blank=True)
     seats = models.PositiveSmallIntegerField(null=True, blank=True)
-    people_count = models.PositiveSmallIntegerField(null=True, blank=True)
+    people_count = models.CharField(max_length=20, null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=Gender.choices, null=True, blank=True)
     baggage = models.CharField(max_length=255, null=True, blank=True)
     departure_time = models.CharField(max_length=120)
     price = models.CharField(max_length=120, null=True, blank=True)

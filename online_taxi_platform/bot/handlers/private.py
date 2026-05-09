@@ -3,7 +3,7 @@ import os
 import django
 from asgiref.sync import sync_to_async
 from aiogram import F, Router
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from django.conf import settings
@@ -12,26 +12,48 @@ from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-from apps.taxi.models import Announcement, Route, TelegramUser  # noqa: E402
 from apps.taxi.log import get_logger  # noqa: E402
-from apps.taxi.services import get_target_group_debug, target_groups_queryset, user_can_create_announcement  # noqa: E402
+from apps.taxi.models import Announcement, Route, TelegramUser  # noqa: E402
+from apps.taxi.services import get_target_group_debug, user_can_create_announcement  # noqa: E402
 from apps.taxi.tasks import send_announcement_task  # noqa: E402
 from apps.taxi.utils import build_preview, humanize_seconds, next_repeat_time, repeat_until  # noqa: E402
 from bot.keyboards import (  # noqa: E402
     active_announcements_keyboard,
+    baggage_keyboard,
     cancel_keyboard,
     confirm_keyboard,
+    gender_keyboard,
     main_menu_keyboard,
+    people_count_keyboard,
     phone_keyboard,
     repeat_interval_keyboard,
     routes_keyboard,
     skip_photo_keyboard,
+    time_keyboard,
 )
 from bot.states import AnnouncementStates  # noqa: E402
 from bot.utils.phone import normalize_phone  # noqa: E402
 
 router = Router()
 logger = get_logger(__name__)
+
+PEOPLE_VALUES = {
+    "people_1": "1",
+    "people_2": "2",
+    "people_3": "3",
+    "people_4": "4",
+    "people_post": "Pochta",
+}
+
+GENDER_VALUES = {
+    "gender_male": Announcement.Gender.MALE,
+    "gender_female": Announcement.Gender.FEMALE,
+}
+
+BAGGAGE_VALUES = {
+    "baggage_yes": "Bor",
+    "baggage_no": "Yo'q",
+}
 
 
 @sync_to_async
@@ -93,6 +115,7 @@ def create_announcement(data: dict, telegram_id: int) -> tuple[Announcement, dic
         car_photo_file_id=data.get("car_photo_file_id"),
         seats=data.get("seats"),
         people_count=data.get("people_count"),
+        gender=data.get("gender"),
         baggage=data.get("baggage"),
         departure_time=data["departure_time"],
         price=data.get("price"),
@@ -283,7 +306,7 @@ async def route_callback(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.answer("Bo'sh joy sonini kiriting:")
     else:
         await state.set_state(AnnouncementStates.people_count)
-        await callback.message.answer("Kishi sonini kiriting:")
+        await callback.message.answer("👥 Necha kishi?", reply_markup=people_count_keyboard())
     await callback.answer()
 
 
@@ -297,33 +320,66 @@ async def seats_handler(message: Message, state: FSMContext) -> None:
     await message.answer("Jo'nash vaqtini kiriting. Masalan: Bugun 18:00")
 
 
-@router.message(AnnouncementStates.people_count, F.text)
-async def people_count_handler(message: Message, state: FSMContext) -> None:
-    if not message.text.strip().isdigit():
-        await message.answer("Kishi sonini raqam bilan kiriting.")
-        return
-    await state.update_data(people_count=int(message.text.strip()))
+@router.callback_query(AnnouncementStates.people_count, F.data.in_(set(PEOPLE_VALUES)))
+async def people_count_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    await state.update_data(people_count=PEOPLE_VALUES[callback.data])
+    await state.set_state(AnnouncementStates.gender)
+    await callback.message.answer("👤 Kim ketadi?", reply_markup=gender_keyboard())
+    await callback.answer()
+
+
+@router.message(AnnouncementStates.people_count)
+async def people_count_text_blocker(message: Message) -> None:
+    await message.answer("Kishi sonini tugmalar orqali tanlang:", reply_markup=people_count_keyboard())
+
+
+@router.callback_query(AnnouncementStates.gender, F.data.in_(set(GENDER_VALUES)))
+async def gender_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    await state.update_data(gender=GENDER_VALUES[callback.data])
     await state.set_state(AnnouncementStates.baggage)
-    await message.answer("Bagaj bormi? Masalan: Yo'q yoki 1 ta sumka")
+    await callback.message.answer("🎒 Bagaj bormi?", reply_markup=baggage_keyboard())
+    await callback.answer()
 
 
-@router.message(AnnouncementStates.baggage, F.text)
-async def baggage_handler(message: Message, state: FSMContext) -> None:
-    await state.update_data(baggage=message.text.strip())
+@router.message(AnnouncementStates.gender)
+async def gender_text_blocker(message: Message) -> None:
+    await message.answer("Jinsni tugma orqali tanlang:", reply_markup=gender_keyboard())
+
+
+@router.callback_query(AnnouncementStates.baggage, F.data.in_(set(BAGGAGE_VALUES)))
+async def baggage_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    await state.update_data(baggage=BAGGAGE_VALUES[callback.data])
     await state.set_state(AnnouncementStates.departure_time)
-    await message.answer("Jo'nash vaqtini kiriting. Masalan: Bugun 18:00")
+    await callback.message.answer("🕒 Vaqtni tanlang:", reply_markup=time_keyboard())
+    await callback.answer()
+
+
+@router.message(AnnouncementStates.baggage)
+async def baggage_text_blocker(message: Message) -> None:
+    await message.answer("Bagaj holatini tugma orqali tanlang:", reply_markup=baggage_keyboard())
+
+
+@router.callback_query(AnnouncementStates.departure_time, F.data.startswith("time_"))
+async def time_callback(callback: CallbackQuery, state: FSMContext) -> None:
+    hour = callback.data.removeprefix("time_")
+    if not hour.isdigit() or int(hour) not in range(24):
+        await callback.answer("Vaqt noto'g'ri.", show_alert=True)
+        return
+    await state.update_data(departure_time=f"{int(hour):02d}:00")
+    await state.set_state(AnnouncementStates.repeat_interval)
+    await callback.message.answer("Qayta yuborish intervalini tanlang:", reply_markup=repeat_interval_keyboard())
+    await callback.answer()
 
 
 @router.message(AnnouncementStates.departure_time, F.text)
 async def departure_time_handler(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
+    if data["announcement_type"] == Announcement.Type.PASSENGER:
+        await message.answer("Vaqtni tugmalar orqali tanlang:", reply_markup=time_keyboard())
+        return
     await state.update_data(departure_time=message.text.strip())
-    if data["announcement_type"] == Announcement.Type.DRIVER:
-        await state.set_state(AnnouncementStates.price)
-        await message.answer("Narxni kiriting. Masalan: 120 000 yoki Kelishiladi")
-    else:
-        await state.set_state(AnnouncementStates.note)
-        await message.answer("Izoh yozing. Izoh bo'lmasa: Yo'q")
+    await state.set_state(AnnouncementStates.price)
+    await message.answer("Narxni kiriting. Masalan: 120 000 yoki Kelishiladi")
 
 
 @router.message(AnnouncementStates.price, F.text)

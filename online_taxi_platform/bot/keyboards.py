@@ -49,6 +49,50 @@ def routes_keyboard(routes) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def people_count_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="1️⃣", callback_data="people_1"),
+                InlineKeyboardButton(text="2️⃣", callback_data="people_2"),
+            ],
+            [
+                InlineKeyboardButton(text="3️⃣", callback_data="people_3"),
+                InlineKeyboardButton(text="4️⃣", callback_data="people_4"),
+            ],
+            [InlineKeyboardButton(text="📦 Pochta", callback_data="people_post")],
+        ]
+    )
+
+
+def gender_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="👨 Erkak", callback_data="gender_male"),
+                InlineKeyboardButton(text="👩 Ayol", callback_data="gender_female"),
+            ]
+        ]
+    )
+
+
+def baggage_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="✅ Bor", callback_data="baggage_yes")],
+            [InlineKeyboardButton(text="❌ Yo'q", callback_data="baggage_no")],
+        ]
+    )
+
+
+def time_keyboard() -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    for hour in range(24):
+        builder.button(text=f"{hour:02d}:00", callback_data=f"time_{hour:02d}")
+    builder.adjust(3)
+    return builder.as_markup()
+
+
 def repeat_interval_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

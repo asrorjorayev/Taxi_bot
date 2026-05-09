@@ -10,6 +10,7 @@ class AnnouncementStates(StatesGroup):
     route = State()
     seats = State()
     people_count = State()
+    gender = State()
     baggage = State()
     departure_time = State()
     price = State()

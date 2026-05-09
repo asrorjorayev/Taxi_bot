@@ -17,6 +17,14 @@ def repeat_label(minutes: int) -> str:
     return labels.get(minutes, f"Har {minutes} minutda")
 
 
+def gender_label(value: str | None) -> str:
+    labels = {
+        Announcement.Gender.MALE: "Erkak",
+        Announcement.Gender.FEMALE: "Ayol",
+    }
+    return labels.get(value, "-")
+
+
 def format_announcement(announcement: Announcement) -> str:
     note = announcement.note or "Yo'q"
     baggage = announcement.baggage or "Yo'q"
@@ -31,26 +39,23 @@ def format_announcement(announcement: Announcement) -> str:
             f"🔢 Raqam: {announcement.car_number or '-'}\n"
             f"👤 Haydovchi: {announcement.full_name}\n"
             f"📞 Telefon: {announcement.phone}\n"
-            f"📝 Izoh: {note}\n\n"
-            f"🔁 Qayta yuborish: {repeat_label(announcement.repeat_interval_minutes)}"
+            f"📝 Izoh: {note}"
         )
     return (
         "🙋 YO'LOVCHI E'LONI\n\n"
         f"📍 Yo'nalish: {announcement.route.name}\n"
         f"👥 Kishi soni: {announcement.people_count or '-'}\n"
+        f"👤 Jins: {gender_label(announcement.gender)}\n"
         f"🎒 Bagaj: {baggage}\n"
         f"🕒 Vaqt: {announcement.departure_time}\n"
         f"👤 Ism: {announcement.full_name}\n"
-        f"📞 Telefon: {announcement.phone}\n"
-        f"📝 Izoh: {note}\n\n"
-        f"🔁 Qayta yuborish: {repeat_label(announcement.repeat_interval_minutes)}"
+        f"📞 Telefon: {announcement.phone}"
     )
 
 
 def build_preview(data: dict, route_name: str) -> str:
     note = data.get("note") or "Yo'q"
     baggage = data.get("baggage") or "Yo'q"
-    repeat = repeat_label(int(data.get("repeat_interval_minutes", 0)))
     if data["announcement_type"] == Announcement.Type.DRIVER:
         return (
             "🚖 HAYDOVCHI E'LONI\n\n"
@@ -62,19 +67,17 @@ def build_preview(data: dict, route_name: str) -> str:
             f"🔢 Raqam: {data.get('car_number')}\n"
             f"👤 Haydovchi: {data.get('full_name')}\n"
             f"📞 Telefon: {data.get('phone')}\n"
-            f"📝 Izoh: {note}\n\n"
-            f"🔁 Qayta yuborish: {repeat}"
+            f"📝 Izoh: {note}"
         )
     return (
         "🙋 YO'LOVCHI E'LONI\n\n"
         f"📍 Yo'nalish: {route_name}\n"
         f"👥 Kishi soni: {data.get('people_count')}\n"
+        f"👤 Jins: {gender_label(data.get('gender'))}\n"
         f"🎒 Bagaj: {baggage}\n"
         f"🕒 Vaqt: {data.get('departure_time')}\n"
         f"👤 Ism: {data.get('full_name')}\n"
-        f"📞 Telefon: {data.get('phone')}\n"
-        f"📝 Izoh: {note}\n\n"
-        f"🔁 Qayta yuborish: {repeat}"
+        f"📞 Telefon: {data.get('phone')}"
     )
 
 
