@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Django
+*.log
+db.sqlite3
+staticfiles/
+media/
+
+# Secrets and local config
+.env
+*.env
+!.env.example
+
+# Docker/local runtime
+celerybeat-schedule
+celerybeat.pid
+*.pid
+
+# IDE/OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
