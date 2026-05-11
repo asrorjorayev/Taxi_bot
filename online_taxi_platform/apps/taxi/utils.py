@@ -26,7 +26,6 @@ def gender_label(value: str | None) -> str:
 
 
 def format_announcement(announcement: Announcement) -> str:
-    note = announcement.note or "Yo'q"
     baggage = announcement.baggage or "Yo'q"
     if announcement.announcement_type == Announcement.Type.DRIVER:
         return (
@@ -34,12 +33,9 @@ def format_announcement(announcement: Announcement) -> str:
             f"📍 Yo'nalish: {announcement.route.name}\n"
             f"🕒 Jo'nash vaqti: {announcement.departure_time}\n"
             f"💺 Bo'sh joy: {announcement.seats or '-'}\n"
-            f"💰 Narx: {announcement.price or 'Kelishiladi'}\n"
             f"🚘 Mashina: {announcement.car_model or '-'}\n"
-            f"🔢 Raqam: {announcement.car_number or '-'}\n"
             f"👤 Haydovchi: {announcement.full_name}\n"
-            f"📞 Telefon: {announcement.phone}\n"
-            f"📝 Izoh: {note}"
+            f"📞 Telefon: {announcement.phone}"
         )
     return (
         "🙋 YO'LOVCHI E'LONI\n\n"
@@ -54,7 +50,6 @@ def format_announcement(announcement: Announcement) -> str:
 
 
 def build_preview(data: dict, route_name: str) -> str:
-    note = data.get("note") or "Yo'q"
     baggage = data.get("baggage") or "Yo'q"
     if data["announcement_type"] == Announcement.Type.DRIVER:
         return (
@@ -62,12 +57,9 @@ def build_preview(data: dict, route_name: str) -> str:
             f"📍 Yo'nalish: {route_name}\n"
             f"🕒 Jo'nash vaqti: {data.get('departure_time')}\n"
             f"💺 Bo'sh joy: {data.get('seats')}\n"
-            f"💰 Narx: {data.get('price') or 'Kelishiladi'}\n"
             f"🚘 Mashina: {data.get('car_model')}\n"
-            f"🔢 Raqam: {data.get('car_number')}\n"
             f"👤 Haydovchi: {data.get('full_name')}\n"
-            f"📞 Telefon: {data.get('phone')}\n"
-            f"📝 Izoh: {note}"
+            f"📞 Telefon: {data.get('phone')}"
         )
     return (
         "🙋 YO'LOVCHI E'LONI\n\n"

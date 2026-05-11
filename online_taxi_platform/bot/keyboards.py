@@ -27,7 +27,7 @@ def phone_keyboard() -> ReplyKeyboardMarkup:
 def skip_photo_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="O'tkazib yuborish")],
+            [KeyboardButton(text="⏭️ O'tkazib yuborish")],
             [KeyboardButton(text="❌ Bekor qilish")],
         ],
         resize_keyboard=True,
@@ -44,9 +44,24 @@ def cancel_keyboard() -> ReplyKeyboardMarkup:
 def routes_keyboard(routes) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for route in routes:
-        builder.button(text=route.name, callback_data=f"route:{route.slug}")
+        builder.button(text=f"📍 {route.name}", callback_data=f"route:{route.slug}")
     builder.adjust(1)
     return builder.as_markup()
+
+
+def seats_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="1️⃣", callback_data="seat_1"),
+                InlineKeyboardButton(text="2️⃣", callback_data="seat_2"),
+            ],
+            [
+                InlineKeyboardButton(text="3️⃣", callback_data="seat_3"),
+                InlineKeyboardButton(text="4️⃣", callback_data="seat_4"),
+            ],
+        ]
+    )
 
 
 def people_count_keyboard() -> InlineKeyboardMarkup:
@@ -79,27 +94,29 @@ def gender_keyboard() -> InlineKeyboardMarkup:
 def baggage_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Bor", callback_data="baggage_yes")],
-            [InlineKeyboardButton(text="❌ Yo'q", callback_data="baggage_no")],
+            [
+                InlineKeyboardButton(text="✅ Bor", callback_data="baggage_yes"),
+                InlineKeyboardButton(text="❌ Yo'q", callback_data="baggage_no"),
+            ]
         ]
     )
 
 
-def time_keyboard() -> InlineKeyboardMarkup:
+def time_keyboard(prefix: str) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for hour in range(24):
-        builder.button(text=f"{hour:02d}:00", callback_data=f"time_{hour:02d}")
-    builder.adjust(3)
+        builder.button(text=f"{hour:02d}:00", callback_data=f"{prefix}_{hour:02d}")
+    builder.adjust(2)
     return builder.as_markup()
 
 
 def repeat_interval_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Bir marta", callback_data="repeat_interval:0")],
-            [InlineKeyboardButton(text="Har 2 minutda", callback_data="repeat_interval:2")],
-            [InlineKeyboardButton(text="Har 5 minutda", callback_data="repeat_interval:5")],
-            [InlineKeyboardButton(text="Har 10 minutda", callback_data="repeat_interval:10")],
+            [InlineKeyboardButton(text="▶️ Bir marta", callback_data="repeat_interval:0")],
+            [InlineKeyboardButton(text="🔁 Har 2 minutda", callback_data="repeat_interval:2")],
+            [InlineKeyboardButton(text="🔁 Har 5 minutda", callback_data="repeat_interval:5")],
+            [InlineKeyboardButton(text="🔁 Har 10 minutda", callback_data="repeat_interval:10")],
         ]
     )
 
@@ -127,6 +144,6 @@ def group_routes_keyboard(routes, selected_slugs: set[str]) -> InlineKeyboardMar
 def active_announcements_keyboard(announcements) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for item in announcements:
-        builder.button(text=f"To'xtatish #{item.id}", callback_data=f"stop_announcement:{item.id}")
+        builder.button(text=f"⏹️ To'xtatish #{item.id}", callback_data=f"stop_announcement:{item.id}")
     builder.adjust(1)
     return builder.as_markup()
