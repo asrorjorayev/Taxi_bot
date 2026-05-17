@@ -25,21 +25,32 @@ def gender_label(value: str | None) -> str:
     return labels.get(value, "-")
 
 
+def clean_route_title(route_title: str | None) -> str:
+    return (route_title or "").strip() or "-"
+
+
 def format_announcement(announcement: Announcement) -> str:
     baggage = announcement.baggage or "Yo'q"
+    route_title = clean_route_title(announcement.route_title)
     if announcement.announcement_type == Announcement.Type.DRIVER:
+        if announcement.mode == Announcement.Mode.MANUAL:
+            return (announcement.note or "").strip()
         return (
+            "━━━━━━━━━━━━━━\n"
             "🚖 HAYDOVCHI E'LONI\n\n"
-            f"📍 Yo'nalish: {announcement.route.name}\n"
-            f"🕒 Jo'nash vaqti: {announcement.departure_time}\n"
-            f"💺 Bo'sh joy: {announcement.seats or '-'}\n"
-            f"🚘 Mashina: {announcement.car_model or '-'}\n"
-            f"👤 Haydovchi: {announcement.full_name}\n"
-            f"📞 Telefon: {announcement.phone}"
+            "📍 Yo'nalish:\n"
+            f"{route_title}\n\n"
+            f"🪑 Bo'sh joy: {announcement.seats or '-'} ta\n\n"
+            f"🕓 Vaqt: {announcement.departure_time}\n\n"
+            "🚘 Mashina:\n"
+            f"{announcement.car_model or '-'}\n\n"
+            "📞 Telefon:\n"
+            f"{announcement.phone}\n"
+            "━━━━━━━━━━━━━━"
         )
     return (
         "🙋 YO'LOVCHI E'LONI\n\n"
-        f"📍 Yo'nalish: {announcement.route.name}\n"
+        f"📍 Yo'nalish: {route_title}\n"
         f"👥 Kishi soni: {announcement.people_count or '-'}\n"
         f"👤 Jins: {gender_label(announcement.gender)}\n"
         f"🎒 Bagaj: {baggage}\n"
@@ -49,27 +60,42 @@ def format_announcement(announcement: Announcement) -> str:
     )
 
 
-def build_preview(data: dict, route_name: str) -> str:
+def build_preview(data: dict, route_title: str) -> str:
     baggage = data.get("baggage") or "Yo'q"
+    interval = repeat_label(int(data.get("repeat_interval_minutes", 0)))
+    route_title = clean_route_title(route_title)
+    if data.get("mode") == Announcement.Mode.MANUAL:
+        return (
+            "📝 E'LON QO'LDA\n\n"
+            f"{data.get('manual_text', '').strip()}\n\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🔁 Qayta yuborish: {interval}"
+        )
     if data["announcement_type"] == Announcement.Type.DRIVER:
         return (
+            "━━━━━━━━━━━━━━\n"
             "🚖 HAYDOVCHI E'LONI\n\n"
-            f"📍 Yo'nalish: {route_name}\n"
-            f"🕒 Jo'nash vaqti: {data.get('departure_time')}\n"
-            f"💺 Bo'sh joy: {data.get('seats')}\n"
-            f"🚘 Mashina: {data.get('car_model')}\n"
-            f"👤 Haydovchi: {data.get('full_name')}\n"
-            f"📞 Telefon: {data.get('phone')}"
+            "📍 Yo'nalish:\n"
+            f"{route_title}\n\n"
+            f"🪑 Bo'sh joy: {data.get('seats')} ta\n\n"
+            f"🕓 Vaqt: {data.get('departure_time')}\n\n"
+            "🚘 Mashina:\n"
+            f"{data.get('car_model')}\n\n"
+            "📞 Telefon:\n"
+            f"{data.get('phone')}\n\n"
+            f"🔁 Qayta yuborish: {interval}\n"
+            "━━━━━━━━━━━━━━"
         )
     return (
         "🙋 YO'LOVCHI E'LONI\n\n"
-        f"📍 Yo'nalish: {route_name}\n"
+        f"📍 Yo'nalish: {route_title}\n"
         f"👥 Kishi soni: {data.get('people_count')}\n"
         f"👤 Jins: {gender_label(data.get('gender'))}\n"
         f"🎒 Bagaj: {baggage}\n"
         f"🕒 Vaqt: {data.get('departure_time')}\n"
         f"👤 Ism: {data.get('full_name')}\n"
-        f"📞 Telefon: {data.get('phone')}"
+        f"📞 Telefon: {data.get('phone')}\n"
+        f"🔁 Qayta yuborish: {interval}"
     )
 
 

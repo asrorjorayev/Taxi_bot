@@ -15,5 +15,23 @@ class AnnouncementStates(StatesGroup):
     preview = State()
 
 
+class DriverManualStates(StatesGroup):
+    waiting_photo = State()
+    waiting_text = State()
+    waiting_interval = State()
+    confirm = State()
+
+
+class DriverAutoStates(StatesGroup):
+    waiting_contact = State()
+    waiting_car_type = State()
+    waiting_photo = State()
+    waiting_direction = State()
+    waiting_seat = State()
+    waiting_time = State()
+    waiting_interval = State()
+    confirm = State()
+
+
 class GroupRegistrationStates(StatesGroup):
     selecting_routes = State()

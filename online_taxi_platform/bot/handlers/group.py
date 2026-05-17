@@ -14,6 +14,7 @@ django.setup()
 from apps.taxi.models import Route, TelegramGroup  # noqa: E402
 from apps.taxi.log import get_logger  # noqa: E402
 from apps.taxi.services import route_group_stats  # noqa: E402
+from utils.route_formatter import route_title_for_model  # noqa: E402
 from bot.keyboards import group_routes_keyboard  # noqa: E402
 from bot.states import GroupRegistrationStates  # noqa: E402
 
@@ -78,7 +79,7 @@ def get_group_info(chat_id: int) -> dict | None:
     group = TelegramGroup.objects.filter(chat_id=chat_id).prefetch_related("routes").first()
     if not group:
         return None
-    routes = list(group.routes.values_list("name", flat=True))
+    routes = [route_title_for_model(route) for route in group.routes.all()]
     return {
         "chat_id": group.chat_id,
         "title": group.title,
@@ -178,7 +179,7 @@ async def debug_routes(message: Message) -> None:
     lines = ["DEBUG ROUTES"]
     for item in stats:
         lines.append(
-            f"{item['name']} ({item['slug']}): total={item['total_groups']}, "
+            f"{item['title']} ({item['slug']}): total={item['total_groups']}, "
             f"active={item['active_groups']}, bot_admin={item['bot_admin_groups']}"
         )
     await message.answer("\n".join(lines))

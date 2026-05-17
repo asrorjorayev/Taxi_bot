@@ -65,6 +65,10 @@ class Announcement(models.Model):
         DRIVER = "driver", "Haydovchi"
         PASSENGER = "passenger", "Yo'lovchi"
 
+    class Mode(models.TextChoices):
+        AUTO = "auto", "Avtomatik"
+        MANUAL = "manual", "Qo'lda"
+
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
         QUEUED = "queued", "Queued"
@@ -79,7 +83,11 @@ class Announcement(models.Model):
 
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, related_name="announcements")
     announcement_type = models.CharField(max_length=20, choices=Type.choices)
+    mode = models.CharField(max_length=20, choices=Mode.choices, default=Mode.AUTO)
     route = models.ForeignKey(Route, on_delete=models.PROTECT, related_name="announcements")
+    route_slug = models.SlugField(max_length=120, db_index=True, blank=True)
+    route_title = models.CharField(max_length=255, blank=True)
+    target_route_slugs = models.JSONField(default=list, blank=True)
     full_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=20)
     car_model = models.CharField(max_length=120, null=True, blank=True)
@@ -109,7 +117,7 @@ class Announcement(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.get_announcement_type_display()} - {self.route}"
+        return f"{self.get_announcement_type_display()} - {self.route_title or self.route}"
 
     @property
     def is_active(self) -> bool:

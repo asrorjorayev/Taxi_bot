@@ -1,23 +1,13 @@
 from django.core.management.base import BaseCommand
 
+from constants.routes import DEFAULT_DATABASE_ROUTES
 from apps.taxi.models import Route
 
 
 class Command(BaseCommand):
     help = "Seed default taxi routes"
 
-    DEFAULT_ROUTES = [
-        ("Bag'dod -> Toshkent", "bagdod_toshkent", "Bag'dod", "Toshkent"),
-        ("Rishton -> Toshkent", "rishton_toshkent", "Rishton", "Toshkent"),
-        ("Buvayda -> Toshkent", "buvayda_toshkent", "Buvayda", "Toshkent"),
-        ("Qo'qon -> Toshkent", "qoqon_toshkent", "Qo'qon", "Toshkent"),
-        ("Farg'ona -> Toshkent", "fargona_toshkent", "Farg'ona", "Toshkent"),
-        ("Toshkent -> Bag'dod", "toshkent_bagdod", "Toshkent", "Bag'dod"),
-        ("Toshkent -> Rishton", "toshkent_rishton", "Toshkent", "Rishton"),
-        ("Toshkent -> Buvayda", "toshkent_buvayda", "Toshkent", "Buvayda"),
-        ("Toshkent -> Qo'qon", "toshkent_qoqon", "Toshkent", "Qo'qon"),
-        ("Toshkent -> Farg'ona", "toshkent_fargona", "Toshkent", "Farg'ona"),
-    ]
+    DEFAULT_ROUTES = DEFAULT_DATABASE_ROUTES
 
     def handle(self, *args, **options):
         created = 0

@@ -1,12 +1,13 @@
 from django.contrib import admin
 from django.db.models import Count, Q
 
+from utils.route_formatter import route_title_for_model
 from .models import Announcement, Blacklist, DeliveryLog, Route, TelegramGroup, TelegramUser
 
 
 @admin.register(Route)
 class RouteAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "from_city", "to_city", "is_active", "active_group_count", "created_at")
+    list_display = ("display_title", "slug", "from_city", "to_city", "is_active", "active_group_count", "created_at")
     list_filter = ("is_active", "from_city", "to_city")
     search_fields = ("name", "slug", "from_city", "to_city")
     prepopulated_fields = {"slug": ("from_city", "to_city")}
@@ -23,6 +24,10 @@ class RouteAdmin(admin.ModelAdmin):
     @admin.display(description="Active groups")
     def active_group_count(self, obj):
         return obj.active_groups
+
+    @admin.display(description="Title")
+    def display_title(self, obj):
+        return route_title_for_model(obj)
 
 
 @admin.register(TelegramUser)
@@ -48,15 +53,17 @@ class TelegramGroupAdmin(admin.ModelAdmin):
 class AnnouncementAdmin(admin.ModelAdmin):
     list_display = (
         "announcement_type",
-        "route",
+        "mode",
+        "route_title",
+        "route_slug",
         "user",
         "status",
         "repeat_interval_minutes",
         "send_count",
         "created_at",
     )
-    list_filter = ("announcement_type", "status", "is_repeating", "route")
-    search_fields = ("full_name", "phone", "car_model", "car_number", "note")
+    list_filter = ("announcement_type", "mode", "status", "is_repeating", "route", "route_slug")
+    search_fields = ("full_name", "phone", "car_model", "car_number", "note", "route_slug", "route_title")
     readonly_fields = ("created_at", "updated_at", "send_count")
 
 
